@@ -1,0 +1,155 @@
+#Program to implement a Priority Queue using a list and the heapq module for efficient operations using GUI. 
+
+import tkinter as tk
+from tkinter import messagebox
+import heapq
+
+class PriorityQueueGUI:
+    def __init__(self, root):
+        self.priority_queue = PriorityQueue()
+        self.root = root
+        self.root.title("Priority Queue GUI")
+        self.root.configure(bg="lightyellow")
+        self.root.geometry("500x600")
+
+        # Label for the title.
+        self.title_label = tk.Label(root, text="   Priority Queue Operations   ", bg="black", fg="yellow", font=("Helvetica", 23))
+        self.title_label.pack(pady=10)
+
+        # Frame for enqueue operations.
+        self.enqueue_frame = tk.Frame(root, bg="lightyellow")
+        self.enqueue_frame.pack(pady=10)
+
+        self.title_label = tk.Label(self.enqueue_frame, text="Atharva Jadhav \n S084", font=("Helvetica", 16, "bold"), bg="lightyellow", fg="black")
+        self.title_label.grid(row=0, column=0, columnspan=3, padx=5, pady=5)
+
+        self.enqueue_label = tk.Label(self.enqueue_frame, text=" Enqueue Task:  ", fg="black", bg="lightyellow", font=("Helvetica", 23))
+        self.enqueue_label.grid(row=1, column=0)
+
+        self.enqueue_entry = tk.Entry(self.enqueue_frame, width=20, font=("Helvetica", 24))
+        self.enqueue_entry.grid(row=1, column=1)
+
+        self.priority_label = tk.Label(self.enqueue_frame, text="Priority:", fg="black", bg="lightyellow", font=("Helvetica", 23))
+        self.priority_label.grid(row=2, column=0)
+
+        self.priority_entry = tk.Entry(self.enqueue_frame, width=5, font=("Helvetica", 24))
+        self.priority_entry.grid(row=2, column=1, pady=10)
+
+        # Enqueue Button.
+        self.enqueue_button = tk.Button(self.enqueue_frame, text="Enqueue", bg="black", fg="green", font=("Helvetica", 23), command=self.enqueue_task)
+        self.enqueue_button.grid(row=4, column=0, pady=10)
+
+        # Dequeue Buttons.
+        self.lowest_dequeue_button = tk.Button(self.enqueue_frame, text="Lowest Dequeue", bg="black", fg="purple", font=("Helvetica", 23), command=self.lowest_dequeue_task)
+        self.lowest_dequeue_button.grid(row=5, column=0, pady=10)
+
+        self.highest_dequeue_button = tk.Button(self.enqueue_frame, text="Highest Dequeue", bg="black", fg="darkorange", font=("Helvetica", 23), command=self.highest_dequeue_task)
+        self.highest_dequeue_button.grid(row=5, column=1, pady=10)
+
+        # Traverse Button.
+        self.traverse_button = tk.Button(self.enqueue_frame, text="Traverse", bg="black", fg="blue", font=("Helvetica", 23), command=self.traverse_queue)
+        self.traverse_button.grid(row=7, column=0, pady=10)
+
+        # Get Size Button.
+        self.size_button = tk.Button(self.enqueue_frame, text="Get Size", bg="black", fg="darkred", font=("Helvetica", 23), command=self.get_size)
+        self.size_button.grid(row=8, column=0, pady=10)
+
+        # Output text area.
+        self.output_text = tk.Text(root, height=10, width=50, bg="black", fg="lightblue", font=("Helvetica", 24))
+        self.output_text.pack(pady=10)
+
+    def enqueue_task(self):
+        task = self.enqueue_entry.get().strip()
+        priority = self.priority_entry.get().strip()
+
+        if task and priority.isdigit():
+            if self.priority_queue.is_unique_priority(int(priority)):
+                self.priority_queue.enqueue(task, int(priority))
+                self.enqueue_entry.delete(0, tk.END)
+                self.priority_entry.delete(0, tk.END)
+                self.clear_output()
+                self.update_output("Enqueued: {} with priority {}\n".format(task, priority))
+            else:
+                messagebox.showwarning("Invalid Input", "Priority must be unique.")
+        else:
+            messagebox.showwarning("Invalid Input", "Please enter both task name and priority as a number.")
+
+    def lowest_dequeue_task(self):
+        task = self.priority_queue.lowest_dequeue()
+        self.clear_output()
+        if task:
+            self.update_output("Lowest Dequeued: {}\n".format(task))
+        else:
+            messagebox.showwarning("Invalid Operation", "Priority Queue is empty. Cannot dequeue.")
+
+    def highest_dequeue_task(self):
+        task = self.priority_queue.highest_dequeue()
+        self.clear_output()
+        if task:
+            self.update_output("Highest Dequeued: {}\n".format(task))
+        else:
+            messagebox.showwarning("Invalid Operation", "Priority Queue is empty. Cannot dequeue.")
+
+    def traverse_queue(self):
+        self.clear_output()
+        self.priority_queue.traverse(lambda task, priority: self.update_output("Task: {}, Priority: {}\n".format(task, priority)))
+
+    def get_size(self):
+        size = self.priority_queue.size()
+        messagebox.showinfo("Queue Size", f"Current size of the queue: {size}")
+
+    def clear_output(self):
+        self.output_text.delete('1.0', tk.END)
+
+    def update_output(self, text):
+        self.output_text.insert(tk.END, text)
+        self.output_text.see(tk.END)
+
+class PriorityQueue:
+    def __init__(self):
+        self.queue = []
+
+    def is_empty(self):
+        return len(self.queue) == 0
+
+    def is_unique_priority(self, priority):
+        for item in self.queue:
+            if item[0] == priority:
+                return False
+        return True
+
+    def enqueue(self, item, priority):
+        heapq.heappush(self.queue, (priority, item))
+
+    def dequeue(self):
+        if self.is_empty():
+            return None
+        priority, item = heapq.heappop(self.queue)
+        return item
+
+    def lowest_dequeue(self):
+        if self.is_empty():
+            return None
+        _, item = heapq.heappop(self.queue)
+        return item
+
+    def highest_dequeue(self):
+        if self.is_empty():
+            return None
+        # Get the highest priority item (last item in the heap)
+        highest_priority = max(self.queue, key=lambda x: x[0])
+        self.queue.remove(highest_priority)
+        heapq.heapify(self.queue)  # Reorder the heap
+        return highest_priority[1]
+
+    def traverse(self, callback):
+        for priority, item in self.queue:
+            callback(item, priority)
+
+    def size(self):
+        return len(self.queue)
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = PriorityQueueGUI(root)
+    root.mainloop()
