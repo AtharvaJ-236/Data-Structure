@@ -1,0 +1,111 @@
+## Program to implement Singly Linked list with insertion, deletion, traversal operations using GUI.
+
+import tkinter as tk
+from tkinter import messagebox
+
+# Node class for the singly linked list.
+class Node:
+    def __init__(self, data=None):
+        self.data = data
+        self.next = None
+
+# Singly Linked List class.
+class LinkedList:
+    def __init__(self):
+        self.head = None
+
+    def insert(self, data):
+        new_node = Node(data)
+        new_node.next = self.head
+        self.head = new_node
+
+    def delete(self, data):
+        temp = self.head
+
+        # If the head node itself holds the key to be deleted.
+        if temp is not None and temp.data == data:
+            self.head = temp.next
+            temp = None
+            return
+
+        # Search for the key to be deleted.
+        prev = None
+        while temp is not None and temp.data != data:
+            prev = temp
+            temp = temp.next
+
+        # If the key was not present in the linked list.
+        if temp is None:
+            return
+
+        # Unlink the node from the linked list.
+        prev.next = temp.next
+        temp = None
+
+    def traverse(self):
+        elements = []
+        current = self.head
+        while current:
+            elements.append(current.data)
+            current = current.next
+        return elements
+
+# GUI for the linked list operations.
+class LinkedListGUI:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Singly Linked List GUI")
+        self.root.configure(bg="light blue")
+        self.root.geometry("500x600")  # Increased window size.
+
+        self.linked_list = LinkedList()
+
+        # Label for entry.
+        self.label = tk.Label(root, text="Enter Value:", bg="light blue", fg="black", font=("Arial", 24))
+        self.label.pack(pady=10)
+
+        # Entry box for input.
+        self.entry = tk.Entry(root, bg="black", fg="yellow", font=("Arial", 23), width=30)  # Increased entry box size and text size.
+        self.entry.pack(pady=5)
+
+        # Insert button.
+        self.insert_button = tk.Button(root, text="  Insert  ", command=self.insert_value, bg="white", fg="green", font=("Arial", 23))
+        self.insert_button.pack(pady=5)
+
+        # Delete button.
+        self.delete_button = tk.Button(root, text="  Delete  ", command=self.delete_value, bg="white", fg="red", font=("Arial", 23))
+        self.delete_button.pack(pady=5)
+
+        # Traverse button.
+        self.traverse_button = tk.Button(root, text=" Traverse ", command=self.traverse_list, bg="white", fg="blue", font=("Arial", 23))
+        self.traverse_button.pack(pady=5)
+
+        # Result label to display list.
+        self.result_label = tk.Label(root, text="List: []", bg="light blue", fg="black", font=("Arial", 24))  # Initialize with empty list.
+        self.result_label.pack(pady=10)
+
+    def insert_value(self):
+        """Insert value into the linked list."""
+        value = self.entry.get()
+        if value:
+            self.linked_list.insert(value)
+            messagebox.showinfo("Success", f"Inserted {value} into the list")
+            self.entry.delete(0, tk.END)  # Clear the entry box.
+
+    def delete_value(self):
+        """Delete value from the linked list."""
+        value = self.entry.get()
+        if value:
+            self.linked_list.delete(value)
+            messagebox.showinfo("Success", f"Deleted {value} from the list")
+            self.entry.delete(0, tk.END)  # Clear the entry box.
+
+    def traverse_list(self):
+        """Traverse the linked list and display the elements."""
+        elements = self.linked_list.traverse()
+        self.result_label.config(text="List: " + " -> ".join(elements))  # Update the result label with the list.
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = LinkedListGUI(root)
+    root.mainloop()

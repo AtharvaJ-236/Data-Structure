@@ -1,0 +1,144 @@
+## Program to implement Doubly Linked List using insertion, deletion, and traversal operations using GUI.
+
+import tkinter as tk
+from tkinter import messagebox
+
+# Node class remains the same as in your original code
+class Node:
+    def __init__(self, data):
+        self.data = data
+        self.next = None
+        self.prev = None
+
+# DoublyLinkedList class with GUI integration
+class DoublyLinkedList:
+    def __init__(self):
+        self.head = None
+        self.tail = None
+
+    def is_empty(self):
+        return self.head is None
+
+    def insert_at_beginning(self, data):
+        new_node = Node(data)
+        if self.is_empty():
+            self.head = self.tail = new_node
+        else:
+            new_node.next = self.head
+            self.head.prev = new_node
+            self.head = new_node
+
+    def insert_at_end(self, data):
+        new_node = Node(data)
+        if self.is_empty():
+            self.head = self.tail = new_node
+        else:
+            self.tail.next = new_node
+            new_node.prev = self.tail
+            self.tail = new_node
+
+    def delete_at_beginning(self):
+        if self.is_empty():
+            return None
+        deleted_node = self.head
+        if self.head == self.tail:
+            self.head = self.tail = None
+        else:
+            self.head = self.head.next
+            self.head.prev = None
+        return deleted_node.data
+
+    def delete_at_end(self):
+        if self.is_empty():
+            return None
+        deleted_node = self.tail
+        if self.head == self.tail:
+            self.head = self.tail = None
+        else:
+            self.tail = self.tail.prev
+            self.tail.next = None
+        return deleted_node.data
+
+# GUI implementation using tkinter
+class DoublyLinkedListGUI:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Doubly Linked List Operations")
+        self.root.configure(bg="lightblue")
+        self.root.geometry("500x600")
+
+        self.doubly_linked_list = DoublyLinkedList()
+
+
+         # Label for output
+        self.label_output = tk.Label(root, text="Doubly Linked List:", bg="lightblue", fg="black", font=("Arial",23))
+        self.label_output.grid(row=0, column=0, padx=10, pady=10, sticky=tk.W)
+
+        # Entry widget for inserting elements
+        self.entry_insert = tk.Entry(root, width=20, bg="black", fg="yellow", font=("Arial",24))
+        self.entry_insert.grid(row=0, column=1, padx=10, pady=10)
+
+        # Buttons for insert operations
+        self.button_insert_beginning = tk.Button(root, text="Insert at Beginning", bg="black", fg="green", font=("Arial",23), command=self.insert_at_beginning)
+        self.button_insert_beginning.grid(row=1, column=0, padx=10, pady=10)
+
+        self.button_insert_end = tk.Button(root, text="Insert at End", bg="black", fg="blue", font=("Arial",23), command=self.insert_at_end)
+        self.button_insert_end.grid(row=1, column=1, padx=10, pady=10)
+
+        # Button for delete operations
+        self.button_delete_beginning = tk.Button(root, text="Delete from Beginning", bg="black", fg="red", font=("Arial",23), command=self.delete_from_beginning)
+        self.button_delete_beginning.grid(row=2, column=0, padx=10, pady=10)
+
+        self.button_delete_end = tk.Button(root, text="Delete from End", bg="black", fg="darkred", font=("Arial",23), command=self.delete_from_end)
+        self.button_delete_end.grid(row=2, column=1, padx=10, pady=10)
+
+        # Text widget to display the doubly linked list
+        self.text_output = tk.Text(root, height=10, width=50, bg="black", fg="green", font=("Arial",23))
+        self.text_output.grid(row=3, column=0, columnspan=3, padx=10, pady=10)
+
+    def insert_at_beginning(self):
+        try:
+            data = int(self.entry_insert.get())
+            self.doubly_linked_list.insert_at_beginning(data)
+            self.update_output()
+            self.entry_insert.delete(0, tk.END)
+        except ValueError:
+            messagebox.showerror("Error", "Please enter a valid integer.")
+
+    def insert_at_end(self):
+        try:
+            data = int(self.entry_insert.get())
+            self.doubly_linked_list.insert_at_end(data)
+            self.update_output()
+            self.entry_insert.delete(0, tk.END)
+        except ValueError:
+            messagebox.showerror("Error", "Please enter a valid integer.")
+
+    def delete_from_beginning(self):
+        deleted_data = self.doubly_linked_list.delete_at_beginning()
+        if deleted_data is not None:
+            messagebox.showinfo("Deleted from Beginning", f"Deleted data: {deleted_data}")
+            self.update_output()
+        else:
+            messagebox.showwarning("Empty List", "The list is empty.")
+
+    def delete_from_end(self):
+        deleted_data = self.doubly_linked_list.delete_at_end()
+        if deleted_data is not None:
+            messagebox.showinfo("Deleted from End", f"Deleted data: {deleted_data}")
+            self.update_output()
+        else:
+            messagebox.showwarning("Empty List", "The list is empty.")
+
+    def update_output(self):
+        self.text_output.delete(1.0, tk.END)
+        current = self.doubly_linked_list.head
+        while current:
+            self.text_output.insert(tk.END, str(current.data) + " <-> ")
+            current = current.next
+        self.text_output.insert(tk.END, "None")
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = DoublyLinkedListGUI(root)
+    root.mainloop()
