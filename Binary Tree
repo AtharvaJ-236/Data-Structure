@@ -1,0 +1,193 @@
+#Program to implement Binary Tree with Inorder, Preorder, Postorder Operations using GUI. 
+import tkinter as tk
+from tkinter import messagebox
+
+# Node and BinaryTree classes remain unchanged
+
+class Node:
+    def __init__(self, key):
+        self.left = None
+        self.right = None
+        self.val = key
+
+class BinaryTree:
+    def __init__(self):
+        self.root = None
+
+    def insert(self, key):
+        if self.root is None:
+            self.root = Node(key)
+        else:
+            self._insert(self.root, key)
+
+    def _insert(self, root, key):
+        if key < root.val:
+            if root.left is None:
+                root.left = Node(key)
+            else:
+                self._insert(root.left, key)
+        else:
+            if root.right is None:
+                root.right = Node(key)
+            else:
+                self._insert(root.right, key)
+
+    def delete(self, key):
+        self.root = self._delete(self.root, key)
+
+    def _delete(self, root, key):
+        if root is None:
+            return root
+        if key < root.val:
+            root.left = self._delete(root.left, key)
+        elif key > root.val:
+            root.right = self._delete(root.right, key)
+        else:
+            if root.left is None:
+                return root.right
+            elif root.right is None:
+                return root.left
+            min_larger_node = self._get_min(root.right)
+            root.val = min_larger_node.val
+            root.right = self._delete(root.right, min_larger_node.val)
+        return root
+
+    def _get_min(self, node):
+        current = node
+        while current.left is not None:
+            current = current.left
+        return current
+
+    def inorder_traversal(self):
+        return self._inorder_traversal(self.root)
+
+    def _inorder_traversal(self, root):
+        res = []
+        if root:
+            res = self._inorder_traversal(root.left)
+            res.append(root.val)
+            res = res + self._inorder_traversal(root.right)
+        return res
+
+    def preorder_traversal(self):
+        return self._preorder_traversal(self.root)
+
+    def _preorder_traversal(self, root):
+        res = []
+        if root:
+            res.append(root.val)
+            res = res + self._preorder_traversal(root.left)
+            res = res + self._preorder_traversal(root.right)
+        return res
+
+    def postorder_traversal(self):
+        return self._postorder_traversal(self.root)
+
+    def _postorder_traversal(self, root):
+        res = []
+        if root:
+            res = self._postorder_traversal(root.left)
+            res = res + self._postorder_traversal(root.right)
+            res.append(root.val)
+        return res
+
+class BinaryTreeGUI:
+    def __init__(self, root):
+        self.tree = root
+        self.window = tk.Tk()
+        self.window.title("Binary Tree GUI")
+        self.window.geometry("500x600")
+        self.window.configure(bg="lightyellow")
+
+        # Title label
+        self.label = tk.Label(self.window, bg="Black", fg="Gold", text=" Atharva Ashish Jadhav S084. ", font=("Courier", 23))
+        self.label.pack(pady=10)
+
+        # Frame for entry and label
+        self.entry_frame = tk.Frame(self.window, bg="lightyellow")
+        self.entry_frame.pack(pady=10)
+
+        # Input fields
+        self.label = tk.Label(self.entry_frame, bg="lightyellow", fg="black", text="Enter a value:", font=("Times New Roman", 23))
+        self.label.grid(row=0, column=0, padx=10)  # Place label in the first column
+        self.entry = tk.Entry(self.entry_frame, bg="black", fg="lightblue", font=("Times New Roman", 24))
+        self.entry.grid(row=0, column=1, padx=10)  # Place entry in the second column
+
+        # Frame for buttons
+        self.button_frame = tk.Frame(self.window, bg="lightyellow")
+        self.button_frame.pack(pady=10)
+
+        # Buttons
+        self.insert_button = tk.Button(self.button_frame, text="Insert", fg="green", font=("Arial", 23), command=self.insert_value)
+        self.insert_button.grid(row=1, column=3, padx=5, pady=5)
+        self.delete_button = tk.Button(self.button_frame, text="Delete", fg="red", font=("Arial", 23), command=self.delete_value)
+        self.delete_button.grid(row=2, column=3, padx=5, pady=5)
+        self.inorder_button = tk.Button(self.button_frame, text="Inorder Traversal", fg="navy", font=("Arial", 23), command=self.show_inorder)
+        self.inorder_button.grid(row=3, column=3, padx=5, pady=5)
+        self.preorder_button = tk.Button(self.button_frame, text="Preorder Traversal", fg="navy", font=("Arial", 23), command=self.show_preorder)
+        self.preorder_button.grid(row=4, column=3, padx=5, pady=5)
+        self.postorder_button = tk.Button(self.button_frame, text="Postorder Traversal", fg="navy", font=("Arial", 23), command=self.show_postorder)
+        self.postorder_button.grid(row=5, column=3, padx=5, pady=5)
+
+        # Canvas for tree drawing
+        self.canvas = tk.Canvas(self.window, width=600, height=400, bg='black')
+        self.canvas.pack(pady=10)
+
+        self.window.mainloop()
+
+    def insert_value(self):
+        try:
+            value = int(self.entry.get())
+            self.tree.insert(value)
+            messagebox.showinfo("Info", f"Inserted {value}")
+        except ValueError:
+            messagebox.showerror("Error", "Please enter a valid integer.")
+        self.draw_tree()
+
+    def delete_value(self):
+        try:
+            value = int(self.entry.get())
+            self.tree.delete(value)
+            messagebox.showinfo("Info", f"Deleted {value}")
+        except ValueError:
+            messagebox.showerror("Error", "Please enter a valid integer.")
+        self.draw_tree()
+
+    def show_inorder(self):
+        result = self.tree.inorder_traversal()
+        messagebox.showinfo("Inorder Traversal", f"Inorder Traversal: {result}")
+        self.draw_tree()
+
+    def show_preorder(self):
+        result = self.tree.preorder_traversal()
+        messagebox.showinfo("Preorder Traversal", f"Preorder Traversal: {result}")
+        self.draw_tree()
+
+    def show_postorder(self):
+        result = self.tree.postorder_traversal()
+        messagebox.showinfo("Postorder Traversal", f"Postorder Traversal: {result}")
+        self.draw_tree()
+
+    def draw_tree(self):
+        self.canvas.delete("all")  # Clear the canvas
+        if self.tree.root is not None:
+            self._draw_tree(self.tree.root, 300, 20, 100)
+
+    def _draw_tree(self, node, x, y, dx):
+        if node is None:
+            return
+        # Draw node
+        self.canvas.create_oval(x-15, y-15, x+15, y+15, fill='gold', outline='blue')
+        self.canvas.create_text(x, y, text=str(node.val))
+
+        # Draw left and right branches
+        if node.left is not None:
+            self.canvas.create_line(x, y, x-dx, y+50, fill='white')
+            self._draw_tree(node.left, x-dx, y+50, dx/2)
+        if node.right is not None:
+            self.canvas.create_line(x, y, x+dx, y+50, fill='white')
+            self._draw_tree(node.right, x+dx, y+50, dx/2)
+
+if __name__ == "__main__":
+    bt = BinaryTree()
+    BinaryTreeGUI(bt)

@@ -1,0 +1,121 @@
+## Program to implement Queue with insertion, deletion and traversal using GUI. 
+
+import tkinter as tk
+from tkinter import messagebox
+
+# Queue class to manage the queue operations
+class Queue:
+    def __init__(self):
+        self.queue = []
+
+    def is_empty(self):
+        return len(self.queue) == 0
+
+    def enqueue(self, item):
+        self.queue.append(item)
+        print(f"Enqueued: {item}")
+
+    def dequeue(self):
+        if self.is_empty():
+            print("Queue is empty. Cannot dequeue.")
+            return None
+        return self.queue.pop(0)
+
+    def traverse(self):
+        if self.is_empty():
+            print("Queue is empty.")
+        else:
+            print("Queue contains:", end=" ")
+            for item in self.queue:
+                print(item, end=" ")
+            print()
+
+    def size(self):
+        return len(self.queue)
+
+# QueueGUI class to create the GUI for the queue operations
+class QueueGUI:
+    def __init__(self, root):
+        self.queue = Queue()
+        self.root = root
+
+        self.root.title("Queue GUI")
+        self.root.configure(bg="lightyellow")
+        self.root.geometry("400x350")
+
+        # Label for the main title
+        self.label = tk.Label(root, text=" Queue Operations ", bg="black", fg="yellow", font=("Helvetica", 23))
+        self.label.pack(pady=10)
+
+        # Label and entry field for entering data to enqueue
+        self.data_label = tk.Label(root, text="Enter value:", bg="lightyellow", fg="black", font=("Helvetica", 23))
+        self.data_label.pack()
+
+        self.entry = tk.Entry(root, width=20, bg="black", fg="white", font=("Helvetica", 24))
+        self.entry.pack()
+
+        # Button to enqueue an item
+        self.enqueue_button = tk.Button(root, text="Enqueue", bg="black", fg="green", font=("Arial", 23), command=self.enqueue_item)
+        self.enqueue_button.pack(pady=10)
+
+        # Button to dequeue an item
+        self.dequeue_button = tk.Button(root, text="Dequeue", bg="black", fg="red", font=("Arial", 23), command=self.dequeue_item)
+        self.dequeue_button.pack()
+
+        # Button to traverse and display the queue
+        self.traverse_button = tk.Button(root, text="Traverse", bg="black", fg="blue", font=("Arial", 23), command=self.traverse_queue)
+        self.traverse_button.pack(pady=10)
+
+        # Button to get the size of the queue
+        self.get_size_button = tk.Button(root, text="Get Size", bg="black", fg="orange", font=("Arial", 23), command=self.get_queue_size)
+        self.get_size_button.pack()
+
+        # Label to display the output
+        self.output_label = tk.Label(root, height=10, width=50, text="", bg="black", fg="lightblue", font=("Helvetica", 23))
+        self.output_label.pack(pady=10)
+
+    # Method to enqueue an item into the queue
+    def enqueue_item(self):
+        value = self.entry.get().strip()
+        if value:
+            self.queue.enqueue(value)
+            messagebox.showinfo("Enqueued", f"Enqueued: {value}")
+            self.entry.delete(0, tk.END)
+        else:
+            messagebox.showwarning("Empty Input", "Please enter a value.")
+
+        self.update_output()
+
+    # Method to dequeue an item from the queue
+    def dequeue_item(self):
+        item = self.queue.dequeue()
+        if item is not None:
+            messagebox.showinfo("Dequeued", f"Dequeued: {item}")
+        else:
+            messagebox.showwarning("Empty Queue", "Queue is empty. Cannot dequeue.")
+
+        self.update_output()
+
+    # Method to traverse the queue and display its contents
+    def traverse_queue(self):
+        self.queue.traverse()
+        self.update_output()
+
+    # Method to get the size of the queue
+    def get_queue_size(self):
+        size = self.queue.size()
+        messagebox.showinfo("Queue Size", f"Queue size is: {size}")
+
+    # Method to update the output label with the current queue contents
+    def update_output(self):
+        if self.queue.is_empty():
+            self.output_label.config(text="Queue is empty.")
+        else:
+            output_str = "Queue: " + " -> ".join(map(str, self.queue.queue))
+            self.output_label.config(text=output_str)
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = QueueGUI(root)
+    root.mainloop()
+
