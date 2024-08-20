@@ -1,0 +1,195 @@
+## Program to implement Huffman Coding using Tree with GUI.
+
+import heapq
+from collections import defaultdict, Counter
+import tkinter as tk
+from tkinter import scrolledtext, messagebox
+
+class Node:
+    def __init__(self, char=None, freq=None):
+        self.char = char
+        self.freq = freq
+        self.left = None
+        self.right = None
+
+    def __lt__(self, other):
+        return self.freq < other.freq
+
+def build_huffman_tree(frequencies):
+    heap = [Node(char, freq) for char, freq in frequencies.items()]
+    heapq.heapify(heap)
+
+    while len(heap) > 1:
+        left = heapq.heappop(heap)
+        right = heapq.heappop(heap)
+        merged = Node(freq=left.freq + right.freq)
+        merged.left = left
+        merged.right = right
+        heapq.heappush(heap, merged)
+
+    return heap[0]
+
+def generate_codes(node, prefix="", codebook={}):
+    if node:
+        if node.char is not None:
+            codebook[node.char] = prefix
+        generate_codes(node.left, prefix + "0", codebook)
+        generate_codes(node.right, prefix + "1", codebook)
+    return codebook
+
+def huffman_encoding(data):
+    if not data:
+        return "", {}, None
+
+    frequencies = Counter(data)
+    root = build_huffman_tree(frequencies)
+    codebook = generate_codes(root)
+    encoded_data = ''.join(codebook[char] for char in data)
+
+    return encoded_data, codebook, root
+
+def huffman_decoding(encoded_data, codebook):
+    reverse_codebook = {v: k for k, v in codebook.items()}
+    decoded_data = ""
+    current_code = ""
+
+    for bit in encoded_data:
+        current_code += bit
+        if current_code in reverse_codebook:
+            decoded_data += reverse_codebook[current_code]
+            current_code = ""
+
+    return decoded_data
+
+def draw_tree(canvas, node, x, y, dx):
+    if node is None:
+        return
+
+    if node.left is not None:
+        canvas.create_line(x, y, x - dx, y + 50, fill="black")
+        draw_tree(canvas, node.left, x - dx, y + 50, dx / 2)
+
+    if node.right is not None:
+        canvas.create_line(x, y, x + dx, y + 50, fill="black")
+        draw_tree(canvas, node.right, x + dx, y + 50, dx / 2)
+
+    canvas.create_oval(x - 20, y - 20, x + 20, y + 20, fill="lightblue", outline="black")
+    canvas.create_text(x, y, text=f"{node.char if node.char is not None else ''}\n{node.freq}", anchor="center", fill="black")
+
+class HuffmanApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Huffman Coding GUI")
+        self.root.geometry("600x800")
+        self.root.configure(bg="lightyellow")
+
+        # Create a canvas and a scrollbar for the entire window
+        self.canvas = tk.Canvas(root, bg="lightyellow")
+        self.scrollbar = tk.Scrollbar(root, orient="vertical", command=self.canvas.yview)
+        self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.canvas.configure(yscrollcommand=self.scrollbar.set)
+
+        # Create a frame to hold all the widgets
+        self.frame = tk.Frame(self.canvas, bg="lightyellow")
+        self.canvas.create_window((0, 0), window=self.frame, anchor="nw")
+
+        # Bind the frame size change to update canvas scroll region
+        self.frame.bind("<Configure>", self.on_frame_configure)
+
+        # Input data
+        tk.Label(self.frame, bg="black", fg="gold", text="   Atharva Ashish Jadhav S084.   ", font=("Times New Roman", 27)).grid(row=0, column=1, padx=10, pady=10, sticky="w")
+        tk.Label(self.frame, bg="lightyellow", fg="black", text="Enter Your Data:", font=("Times New Roman", 23, "bold")).grid(row=1, column=0, padx=10, pady=5, sticky="e")
+        self.data_entry = tk.Entry(self.frame, width=50, bg="black", fg="white", font=("Arial", 24))
+        self.data_entry.grid(row=1, column=1, padx=10, pady=5, sticky="w")
+
+        # Encode button
+        tk.Button(self.frame, bg="white", fg="green", text="Encode", font=("Courier", 24, "bold"), command=self.encode_data).grid(row=2, column=1, padx=10, pady=5, sticky="w")
+
+        # Encoded data
+        tk.Label(self.frame, bg="lightyellow", fg="black", text="Encoded Data:", font=("Times New Roman", 23, "bold")).grid(row=3, column=0, padx=10, pady=5, sticky="ne")
+        self.encoded_frame = tk.Frame(self.frame)
+        self.encoded_frame.grid(row=3, column=1, padx=10, pady=5, sticky="w")
+
+        self.encoded_text = scrolledtext.ScrolledText(self.encoded_frame, height=5, width=50, bg="black", fg="skyblue", font=("Arial", 21))
+        self.encoded_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        self.encoded_scrollbar = tk.Scrollbar(self.encoded_frame, command=self.encoded_text.yview)
+        self.encoded_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.encoded_text.config(yscrollcommand=self.encoded_scrollbar.set)
+
+        # Codebook
+        tk.Label(self.frame, bg="lightyellow", fg="black", text="Codebook:", font=("Times New Roman", 23, "bold")).grid(row=4, column=0, padx=10, pady=5, sticky="ne")
+        self.codebook_frame = tk.Frame(self.frame)
+        self.codebook_frame.grid(row=4, column=1, padx=10, pady=5, sticky="w")
+
+        self.codebook_text = scrolledtext.ScrolledText(self.codebook_frame, height=5, width=50, bg="black", fg="lightgreen", font=("Arial", 21))
+        self.codebook_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        self.codebook_scrollbar = tk.Scrollbar(self.codebook_frame, command=self.codebook_text.yview)
+        self.codebook_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.codebook_text.config(yscrollcommand=self.codebook_scrollbar.set)
+
+        # Huffman Tree Canvas
+        tk.Label(self.frame, bg="lightyellow", fg="black", text="Huffman Tree:", font=("Times New Roman", 23, "bold")).grid(row=5, column=0, padx=10, pady=5, sticky="ne")
+        self.tree_canvas = tk.Canvas(self.frame, bg="white", width=500, height=300)
+        self.tree_canvas.grid(row=5, column=1, padx=10, pady=5, sticky="w")
+
+        # Decode button
+        tk.Button(self.frame, bg="white", fg="blue", text="Decode", font=("Courier", 24, "bold"), command=self.decode_data).grid(row=6, column=1, padx=10, pady=5, sticky="w")
+
+        # Decoded data
+        tk.Label(self.frame, bg="lightyellow", fg="black", text="Decoded Data:", font=("Times New Roman", 23, "bold")).grid(row=7, column=0, padx=10, pady=5, sticky="ne")
+        self.decoded_frame = tk.Frame(self.frame)
+        self.decoded_frame.grid(row=7, column=1, padx=10, pady=5, sticky="w")
+
+        self.decoded_text = scrolledtext.ScrolledText(self.decoded_frame, height=5, width=50, bg="black", fg="yellow", font=("Arial", 21))
+        self.decoded_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        self.decoded_scrollbar = tk.Scrollbar(self.decoded_frame, command=self.decoded_text.yview)
+        self.decoded_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.decoded_text.config(yscrollcommand=self.decoded_scrollbar.set)
+
+        # Size comparison
+        tk.Label(self.frame, bg="lightyellow", fg="black", text="Original Size:", font=("Times New Roman", 23, "bold")).grid(row=8, column=0, padx=10, pady=5, sticky="e")
+        self.original_size_label = tk.Label(self.frame, bg="black", fg="orange", text="", font=("Arial", 24))
+        self.original_size_label.grid(row=8, column=1, padx=10, pady=5, sticky="w")
+
+        tk.Label(self.frame, bg="lightyellow", fg="black", text="Compressed Size:", font=("Times New Roman", 23, "bold")).grid(row=9, column=0, padx=10, pady=5, sticky="e")
+        self.compressed_size_label = tk.Label(self.frame, bg="black", fg="orange", text="", font=("Arial", 24))
+        self.compressed_size_label.grid(row=9, column=1, padx=10, pady=5, sticky="w")
+
+    def on_frame_configure(self, event):
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+
+    def encode_data(self):
+        data = self.data_entry.get()
+        encoded_data, codebook, root = huffman_encoding(data)
+        self.encoded_text.delete(1.0, tk.END)
+        self.encoded_text.insert(tk.END, encoded_data)
+        self.codebook_text.delete(1.0, tk.END)
+        self.codebook_text.insert(tk.END, str(codebook))
+
+        self.tree_canvas.delete("all")
+        draw_tree(self.tree_canvas, root, x=250, y=30, dx=100)
+
+        original_size = len(data) * 8  # Assuming each character is 1 byte
+        compressed_size = len(encoded_data)
+        self.original_size_label.config(text=f"{original_size} bits")
+        self.compressed_size_label.config(text=f"{compressed_size} bits")
+
+        self.encoded_data = encoded_data
+        self.codebook = codebook
+
+    def decode_data(self):
+        try:
+            decoded_data = huffman_decoding(self.encoded_data, self.codebook)
+            self.decoded_text.delete(1.0, tk.END)
+            self.decoded_text.insert(tk.END, decoded_data)
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = HuffmanApp(root)
+    root.mainloop()
